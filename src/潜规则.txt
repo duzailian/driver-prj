@@ -1,0 +1,4 @@
+1.rx置位后不能马上读取FIFO数据，需要等一会
+2.BitFramingReg register在实际操作时，需要现根据需要写入TxLastBits和RxAlign后
+  写入StartSend
+3.执行CRC计算命令后FIFO长度为0，且如果要发送包含CRC的数据包，只需执行CRC计算命令并设置TxCRCEn位即可,无需读取计算结果

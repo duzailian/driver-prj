@@ -1,0 +1,25 @@
+1. 工程代码的形成过程大致如下:
+     整体的工程框架->delay/UART/->GPIO/RCC/SPI/I2C/DMA->interrupt/mem/tool->OLED/W25Q64/E2PROM/sdcard->FATFS->RFID。
+   由于本工程(包括每个分号在内的所有字符)完全由小杜一人构思并实现，唯一的参考资料是来自官网的全英文Specification/DataSheet/Reference Manual
+   无任何其他参考方式,更无Ctrl+C/Ctrl+V操作,本工程的编码过程亦即小杜在编程习惯、注释习惯及版本管理习惯等的逐步提升、进化过程，故各位看官可以根据工程代码形成
+   过程逆序阅读(毕竟后形成者相对较先进)。
+2. 程序设计是门艺术，需要精雕细琢、不断进取、多看、多思、多行才能有所品味的艺术。世上没有完美的程序，
+   只有不断追求完美的程序猿。因为追求卓越，所以成就卓越。
+3. 物联网时代已经到来，骚年，睡什么睡！起来敲程序。养家糊口靠的是钱，不是连糖纸都换不来的扯犊子的梦想。
+4. 由于时间仓促，尚有SDIO驱动的bug有待解决，具体描述如下:
+   __align(4) static uint8 saucTmp[SD_DATA_BLOCK_SZ] __attribute__((at(0x20000050))) = {0};
+   __align(4)意在将变量在内存中的存储位置按4字节对齐，STM32是数据总线是32Bit,故通过DMA操作的内存必须是4字节对齐的，
+   __attribute__((at(0x20000050)))是将该数组起始内存地址固定为0x20000050，如果去掉而任由编译器分配内存地址，将会导致DMA操作失败
+   即此处出现了DMA任性地"认内存"现象。
+5.SDIO和MFRC522是很强大的东西，可以实现驱动很多不同外设(例如SDIO支持SDIO协议WIFI等外设，MFRC522可以读写很多14443协议的卡)
+  由于小杜手头资源较短缺(例如只有MF1 S50卡和一张High Capacity SD Memory Card)，
+  且时间较为仓促，故仅完成了手里的外设驱动,程序中未预留用于支持其他外设的接口 
+  注:
+	已确定该代码可正常驱动的外设为:
+	1.SD卡为Physical Layer Specification version 2.00(见Simplified_Physical_Layer_Spec.pdf)中的High Capacity SD Memory Cards
+	2.S50卡为MF1S503yX卡(根据来自NXP的官方文档MF1S50YYX_V1.pdf中的ATQA的描述推测,具体型号未知)
+  不过看官你也不必担心，小杜已经在代码中实现了较为完善的Error Code返回及串口打印机制，将MCU的串口与
+  PC连接，打印出错误代码，并结合程序与Specification/Data Sheet完善现有代码，即可成功驱动你手里的兼容外设
+	3.除SD卡和S50卡之外，其他E2PROM等外设均已测试通过。
+注:
+	本工程的IDE为MDK5.0,MCU为STM32F103ZET6,请恰当选择兼容的IDE及MCU

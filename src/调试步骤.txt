@@ -1,0 +1,13 @@
+调试步骤
+	1.调试RF无应答问题的步骤
+		1.根据RC522 data sheet，比对寄存器配置是否完整、正确
+		2.用仿真器逐条跟踪写入的寄存器的值并记录
+		3.根据S50的data sheet看S50 SendShortFrame()是否正确
+		4.加测试语句，查看Rc522StartTransCv 函数中RC522状态是否正确
+		5.PICC与PCD通信调试完成后将SendShortFrame()的操作同步到其他发送函数
+		6.每次发送命令都开关RF 部分，可能是启动时间不足导致
+	2.逐步调试 S50AntiCollLeveln()函数，看是否存在不正确数据
+	
+
+	
+	

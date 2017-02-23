@@ -1,0 +1,4 @@
+1.ComIrqReg register 中的中断请求需要软件清零
+2.执行命令不能减少fifo中的数据长度，故用完fifo中的数据后需要手动清FIFO
+3.不确定RC522碰撞检测包含校验位
+4.Short frame 数据为7bits

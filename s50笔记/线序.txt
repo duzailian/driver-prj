@@ -1,0 +1,5 @@
+1. cs   -- PA3
+2. rst  -- PA4
+3. SCK  -- PA5
+4. MISO -- PA6
+5. MOSI -- PA7

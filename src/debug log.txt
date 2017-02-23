@@ -1,0 +1,17 @@
+2-21
+已解决:
+1.FIFO长度为0问题Rc522WaitRxEnd()中等到RxIRq后加1ms延时
+2.S50AntiCollLeveln()调试完成,
+2-22
+待解决:
+//1.调试S50SelectCard()中FIFO长度为0问题;
+  1.检查RxModeReg和TxModeReg配置是否正确
+  (CRCPreset是根据RxModeReg和TxModeReg registers自动加载的)
+  2.添加测试代码,计算ISOIEC14443-3_2001 annex B中示例Crc，看计算结果是否一致;
+  3.将写FIFO放到计算CRC命令之前;
+  4.添加调试语句验证FIFO长度，注意看是否有CRCErr产生,
+  5.开关TxCRCEn看是否有影响
+2.确定Rc522的一条MFAuthent命令是否能完成S50卡的整个验证流程
+3.编写程序驱动RC522自带timer并应用到超时检测中
+4.调试完成S50卡的block read/write程序,并将其ACK检测机制加入其中
+5.修改Crc计算函数

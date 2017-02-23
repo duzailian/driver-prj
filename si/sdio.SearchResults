@@ -1,0 +1,4 @@
+---- Rc522CalcCrc Matches (3 in 3 files) ----
+Rc522.c (bsp\rfid\rc522):bool Rc522CalcCrc(uint8 *pucData, uint8 ucLen)
+Rc522.h (bsp\rfid\rc522):extern bool Rc522CalcCrc(uint8 *pucData, uint8 ucLen);
+S50.c (bsp\rfid\s50):    Rc522CalcCrc();    

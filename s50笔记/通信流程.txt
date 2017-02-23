@@ -1,0 +1,17 @@
+14443-3
+1.发送:REQA 寻卡(short frame)
+  应答:ATQA 
+  或
+  发送:WUPA 唤醒(short frame)
+  应答:ATQA 
+2.Anticollision loop
+  SEL + NVB + UIDCLn
+  
+3.Select sequence
+4.Three pass authentication sequence
+	1. 发送:
+		keyA(0x60)或keyB(0x61) + Block Addr + CRC_A
+		
+14443-4
+1.发送:RATS
+  应答:

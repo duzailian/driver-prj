@@ -1,0 +1,34 @@
+容量
+	32768 pages 256byte/pages 一次可最多写256byte
+	4K sector、32k Block、64k Block和整片擦除
+	2048可擦除sector, 128可擦除block
+速度
+	SPI CLK 最大104MHz 
+
+写保护
+	1.欠压reset,所有操作无效
+	2.上电后写使能延迟
+	3.写使能/失能命令，ease或者program后自动写失能
+	4.用state register 实现软件/硬件 写保护
+	5.powerdown指令，
+	6.
+
+注意:
+	CS必须跟随VCC poweroff powerdown, 
+	DI 在CLK上升沿写入ADDR、CMD或者Dtat，DO在CLK下降沿输出数据
+	Time delay write disable after Power-up   Write Enable也无效
+    erase或者program 后自动write disable	
+	上电后write disable
+	每次写入不得多于256Byte
+	
+	需要Write Enable instruction 的操作:
+	Page Program, Sector 
+	Erase, Block Erase, Chip Erase or Write Status Register instruction
+    
+	mode0 :CLK空闲为低，mode3:CLK空闲为高
+	
+	Write access to the Status Register is controlled by the state of the  
+	non-volatile Status Register Protect bits (SRP0, SRP1),
+	 the Write Enable instruction, and during Standard/Dual 
+	 SPI operations, the /WP pin
+	
