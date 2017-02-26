@@ -132,8 +132,8 @@ const SdInitFuncDef SdInitFunc[] = {_SdSoftRest, _SdHC_Chck, _SdPowerOn, _SdAskC
                                     _SdAskCSD, _SdSelectCard, _SdAskCardSta, _SdSetDataBus, _SdAskSdSta, };////dAskCardSta, };//_SdAskSdSta};//_SdSwitchFunc};
 //static uint8  aucCsdBuf[RCA_SZ];
 
-static uint16  usRCA;
-static enSdCdStaDef enCurCdSta = SdCdStaIdle;//Physical Layer Simplified Specification V2.0 中的CURRENT_STATE 
+static uint16  usRCA;// relative card address 
+static enSdCdStaDef enCurCdSta = SdCdStaIdle;//Physical Layer Simplified Specification V2.0 中的Figure 4-1和Figure 4-3:
 
 #if SD_DBG
 static  __align(4) uint8 aucSdReadBuffer[SD_DATA_BLOCK_SZ] = {0};
@@ -156,8 +156,8 @@ static const stCmdErrFilterDef aucResErrFilter[] = {//用于过滤Sdio片内外设与协议
 返回值: void
 输入:   void
 输出:   void
-备注:
-注意:
+备注:   void
+注意:   void
 */
 static void SdioRccInit(void)
 {
@@ -172,8 +172,8 @@ static void SdioRccInit(void)
 返回值: void
 输入:   void
 输出:   void
-备注:
-注意:
+备注:   void
+注意:   void
 */
 static void SdioGpioInit(void)
 {
@@ -199,8 +199,8 @@ static void SdioGpioInit(void)
 返回值: void
 输入:   void
 输出:   void
-备注:
-注意:
+备注:   void
+注意:   void
 */
 static void SdioRegInit(void)
 {
@@ -223,7 +223,7 @@ static void SdioRegInit(void)
     1.过滤后的Error Code
 输入:   void
 输出:   void
-备注:
+备注:   void
 注意:
     1.aucResErrFilter为存储Error Code滤波参数的数组
         其中，ucCmd为需要滤掉的Error Code对应的cmd
@@ -342,7 +342,8 @@ static void _SDIO_SendCommand(stCmdSendDef *SDIO_CmdStruct)
     1.等待SDIO的STA寄存器中与ChckMsk对应的位置位
     2.如果期间STA寄存器有错误FLG,则返回Error Code
 参数:   
-    1.ChckMsk:需要等待置位的Bit(SDIO_FLAG_CMDSENT etc.)
+    1.ChckMsk:需要等待置位的Bit
+(SDIO_FLAG_CMDSENT etc.)
 返回值: 
     1.0:      Success
     2.Others: Error Code
@@ -624,9 +625,12 @@ static uint16 _SdChckR6(void)
     TRUE:  ulStateMsk对应的Card Status Bit为1
     FALSE: ulStateMsk对应的Card Status Bit为0
 输入:   void
-输出:   void
+输出:   
+    1.enCurCdSta当前SD状态
 备注:   void
-注意:   void
+注意:    
+    1.If the command execution causes a state change, it will be visible to the host in the 
+      response to the next command. 
 */
 static bool _SdChckR1(uint32 ulStateMsk)
 {
@@ -696,6 +700,18 @@ ErrReTurn:
     return err;
 }
 
+/*
+功能:
+    1.Soft Rest
+参数:   void
+返回值: 
+    1.0:      Success
+    2.Others: Error Code
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static uint16 _SdSoftRest(void)
 {
     uint16   err = 0;
@@ -712,6 +728,21 @@ static uint16 _SdSoftRest(void)
     return err;
 }
 
+/*
+功能:
+    1.发送CMD13并接收SD的应答
+    2.将接收自SD卡的数据按R1解析以确定SD卡状态(检查是否有错误发生)
+    3.不断发送CMD13,直到SD卡Operation Complete并退出prg状态
+    4.返回Error Code
+参数:   void
+返回值: 
+    1.0:      Success
+    2.Others: Error Code
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static uint16 _SdAskCardSta(void)
 {
     uint16   err = 0;
@@ -744,7 +775,20 @@ ErrReTurn:
     PrintErr(_SdAskCardSta, ucStep, err);
     return err;
 }
-/*等待可向卡发送数据*/
+
+/*
+功能:
+    1.不断发送SD Card状态查询命令直到SD卡可以接收来自MCU的数据
+    2.返回Error Code
+参数:   void
+返回值: 
+    1.0:      Success
+    2.Others: Error Code
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static uint16 _SdWaitDataW(void)
 {
     uint16   err = 0;
@@ -766,6 +810,18 @@ ErrReTurn:
     return err;
 }
 
+/*
+功能:
+    1.发送CMD8以确定SD卡是
+参数:   void
+返回值: 
+    1.0:      Success
+    2.Others: Error Code
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static uint16 _SdHC_Chck(void)
 {
     uint16   err = 0;
@@ -777,12 +833,15 @@ static uint16 _SdHC_Chck(void)
     stCmdSend.ulCmd  = SD_CMD_SEND_IF_COND | SDIO_CPSM_Enable | SDIO_Response_Short | SDIO_Wait_No;
     err = SdioSendRegularCmd(&stCmdSend);
     if (err & ~SDIO_FLAG_CTIMEOUT)
-    {
+    {//除等待应答外的错误发生则直接返回
         ucStep = 0;
         goto ErrReTurn;
     }
     if (err & SDIO_FLAG_CTIMEOUT)
     {//Standard Capacity
+        /*Ver2.00 or later SD Memory Card(voltage mismatch)
+          or Ver1.X SD Memory Card
+          or not SD Memory Card*/
         SdCardType = SD_SCCard;
         err         = 0;
         goto success;
@@ -804,6 +863,16 @@ ErrReTurn:
     return err;
 }
 
+/*
+功能:
+    1.串口打印SD卡相关信息(MID/OID/PNM/PRV/PSN/MDT)
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 void PrintSdInfo(void)
 {
     printf("SD Card infor:\r\n");
@@ -851,7 +920,20 @@ void PrintSdInfo(void)
     return;
 }
 
-/*request card identification */
+/*
+功能:
+    1.request card identification
+    2.返回Error Code
+参数:   void
+返回值:     
+    0:      Success
+    Others: Error Code
+输入:   void
+输出:   
+    1.unCidBuf 存储CID的缓存
+备注:   void
+注意:   void
+*/
 static uint16 _SdAskCID(void)
 {
     uint16 err = 0;
@@ -874,7 +956,21 @@ ErrReTurn:
     return err;
 }
 
-/*request relative card address */
+/*
+功能:
+    1.request relative card address 
+    2.如果获取到的RCA为0，则重新向SD卡发送请求
+    3.返回Error Code
+参数:   void
+返回值:     
+    0:      Success
+    Others: Error Code
+输入:   void
+输出:   
+    1.usRCA
+备注:   void
+注意:   void
+*/
 static uint16 _SdAskRCA(void)
 {
     uint16 err = 0;
@@ -909,6 +1005,19 @@ ErrReTurn:
     return err;
 }
 
+/*
+功能:
+    1.Card Initialization and Identification Process 
+    2.如果执行过程中有错误发生，则终止初始化及识别流程,并返回Error Code
+参数:   void
+返回值:     
+    0:      Success
+    Others: Error Code
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static uint16 SdioCardInit(void)
 {
     uint8       i     = 0;
@@ -932,6 +1041,16 @@ ErrReTurn:
     return err;
 }
 
+/*
+功能:
+    1.SDIO相关及SD Card Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 void SdCardInit(void)
 {
     SdioRccInit();
@@ -944,6 +1063,20 @@ void SdCardInit(void)
     return;
 }
 
+/*
+功能:
+    1.获取指定RCA对应的SD Card的CSD并存入unCsdBuf
+参数:   void
+返回值: 
+    0:      Success
+    Others: Error Code
+输入:   
+    1.usRCA:  relative card address 
+输出:   
+    1.unCsdBuf:存储CSD的结构体
+备注:   void
+注意:   void
+*/
 static uint16 _SdAskCSD(void)
 {
     uint16   err = 0;
@@ -967,6 +1100,19 @@ ErrReTurn:
     return err;
 }
 
+/*
+功能:
+    1.等待SD Card非忙(DAT0 data line非0)
+    2.检查SD Card State Error
+参数:   void
+返回值: 
+    0:      Success
+    Others: Error Code
+输入:   void 
+输出:   void
+备注:   void
+注意:   void
+*/
 static uint16 _SdChckR1b(void)
 {
     uint16      err     = 1;
@@ -977,6 +1123,21 @@ static uint16 _SdChckR1b(void)
     return err;
 }
 
+/*
+功能:
+    1.发送CMD7,使指定的RCA对应的SD Card 进入Transfer State
+    2.检查SD Card State Error并返回
+参数:   void
+返回值: 
+    0:      Success
+    Others: Error Code
+输入:   
+    1.usRCA relative card address 
+输出:   void
+备注:   void
+注意:   
+    1.如果调用该函数前,usRCA为0,所有收到CMD7的SD卡都将进入Stand-by State
+*/
 static uint16 _SdSelectCard(void)
 {
     uint16   err = 0;
@@ -1005,6 +1166,19 @@ ErrReTurn:
     return err;
 }
 
+/*
+功能:
+    1.设置Data Bus 宽度
+参数:   void
+返回值: 
+    0:      Success
+    Others: Error Code
+输入:   void
+输出:   void
+备注:   void
+注意:   
+    1.程序编译时Data Bus 宽度已通过SD_DATA_BUS确定
+*/
 static uint16 _SdSetDataBus(void)
 {
     uint16   err = 0;
@@ -1039,7 +1213,21 @@ ErrReTurn:
     return err;
 }
 
-/*发送switch func cmd*/
+/*
+功能:
+    1.发送Switch Function Command(CMD6)
+参数:   void
+返回值: 
+    0:      Success
+    Others: Error Code
+输入:   void
+输出:   void
+备注:   void
+注意:   
+    1.只有Physical Layer Specification Version 1.10及其兼容的SD卡支持CMD6
+    2.CMD6 is valid under the "Transfer State". 
+    3. this is a standard single block read transaction,
+*/
 static uint16 _SdSendSwichFunc(enSdSFModeDef mode)
 {
     uint16   err = 0;

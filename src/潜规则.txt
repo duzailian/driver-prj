@@ -2,3 +2,4 @@
 2.BitFramingReg register在实际操作时，需要现根据需要写入TxLastBits和RxAlign后
   写入StartSend
 3.执行CRC计算命令后FIFO长度为0，且如果要发送包含CRC的数据包，只需执行CRC计算命令并设置TxCRCEn位即可,无需读取计算结果
+4.Transceive命令在数据接收完成后，RC522不能回到Idle状态

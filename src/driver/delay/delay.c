@@ -39,6 +39,10 @@ void DelayMs(uint16 usMs)
     return;
 }
 
+/*
+注意:
+    1.usUs最大值为0xffffff / 72 = 147168
+*/
 void DelayUs(uint16 usUs)
 {
     SysTick->LOAD  = usUs * 72;
@@ -46,7 +50,7 @@ void DelayUs(uint16 usUs)
 
     while(!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk));
 	
-	  SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk ;
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk ;
 }
 
 #if DELAY_DBG

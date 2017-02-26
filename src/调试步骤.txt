@@ -7,7 +7,11 @@
 		5.PICC与PCD通信调试完成后将SendShortFrame()的操作同步到其他发送函数
 		6.每次发送命令都开关RF 部分，可能是启动时间不足导致
 	2.逐步调试 S50AntiCollLeveln()函数，看是否存在不正确数据
-	
+	3.添加Rc522自带timer驱动程序的步骤
+	    1.根据ISOIEC14443-3_2001 .PDF中的6.1.1 Frame delay time及MF1S50YYX_V1（官网）复件 .pdf中的12.1 MIFARE Authentication和9.2 Timings确定不同cmd对应的timout的
+		时间范围
+		2.根据上述时间范围确定RC522的预分频器值及reload值
+		
 
 	
 	

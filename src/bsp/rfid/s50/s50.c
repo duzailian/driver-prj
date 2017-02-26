@@ -282,8 +282,9 @@ ErrReturn:
     检查S50卡Anticollision loop执行状态
 参数:   void
 返回值:
-    TRUE:  Success 
-    FALSE: Fail
+    AntiColling:  当前level的 Anticollision loop未完成
+    AntiCollOk:   当前level的 Anticollision loop已完成(BCC校验通过)
+    AntiCollErr:  Fail
 输入:void
 输出:void
 备注:
@@ -338,10 +339,6 @@ static bool S50SendAcData(uint8 *pucSend, stDataCntDef stSendCnt)
     Rc522StartTransCv(stSendCnt.ucBitCnt, stSendCnt.ucBitCnt);
     bRes = Rc522WaitRxEnd();
     Rc522StopTransCv();
-    if(0 == Rc522GetFifoLevel())
-    {//没有收到数据
-        bRes = FALSE;
-    }
     return bRes;
 }
 
@@ -896,7 +893,7 @@ static bool S50MFRecvBlockData(uint8 ucBlockAddr, uint8 *pucRecv)
     2.S50卡采用小端存储
     3.出厂数据不确定
 */
-static bool S50MFGetReadData(stS50DataBlockDef *pstBlockData, uint32 *pulVal)
+static bool S50MFUnPackReadData(stS50DataBlockDef *pstBlockData, uint32 *pulVal)
 {
     {
         uint32 ulVal0 = pstBlockData->unVal0.ulWord;
@@ -939,12 +936,12 @@ bool S50MFBlockRead(uint8 ucBlockAddr, uint32 *pulVal)
     uint8 aucRecv[S50BLOCK_DATA_SZ] = {0};
 
     bRes = S50MFRecvBlockData(ucBlockAddr, &aucRecv[0]);//发送读卡指令,并接收Block数据
-    if(bRes)
+    if(FALSE == bRes)
     {
         printf("S50 Block Data Recv Error!\r\n");
         goto ErrorReturn;
     }
-    bRes = S50MFGetReadData((stS50DataBlockDef *)aucRecv, pulVal);
+    bRes = S50MFUnPackReadData((stS50DataBlockDef *)aucRecv, pulVal);
     return bRes;
 ErrorReturn:
     return FALSE;
@@ -997,7 +994,7 @@ static bool S50MFSendBlockData(uint8 ucBlockAddr, uint8 *pucSend)
     2.S50卡采用小端存储
     3.出厂数据不确定
 */
-static void S50MFGetWriteData(uint32 ulVal, uint8 *pucSend)
+static void S50MFPackWriteData(uint32 ulVal, uint8 *pucSend)
 {
     stS50DataBlockDef *pstBlockData = (stS50DataBlockDef *)pucSend;
 
@@ -1033,7 +1030,7 @@ bool S50MFBlockWrite(uint8 ucBlockAddr, uint32 ulVal)
     bool bRes = FALSE;
     uint8 aucSend[S50BLOCK_DATA_SZ] = {0};
 
-    S50MFGetWriteData(ulVal, &aucSend[0]);//整理出写入S50卡1个Block的数据
+    S50MFPackWriteData(ulVal, &aucSend[0]);//整理出写入S50卡1个Block的数据
     bRes = S50MFSendBlockData(ucBlockAddr, &aucSend[0]);
     return bRes;
 }
@@ -1069,7 +1066,8 @@ void S50RwTest(void)
     uint32 ulRead = 0;
     uint32 ulWrite = 56;
 
-    S50MFBlockWrite(S50TEST_BLOCK, ulWrite);
+    S50MFBlockRead(S50TEST_BLOCK, &ulRead);
+    //S50MFBlockWrite(S50TEST_BLOCK, ulWrite);
     
     S50MFBlockRead(S50TEST_BLOCK, &ulRead);
     if(ulRead == ulWrite)
@@ -1107,6 +1105,7 @@ Start:
         goto Start;
     }
     S50RwTest();
+    goto Start;
     return;
 }
 #endif

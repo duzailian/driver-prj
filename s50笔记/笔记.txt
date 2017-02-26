@@ -1,0 +1,32 @@
+1.S50cmd ：
+	1.REQA/WUPA
+	2.ANTICOLLISION Command
+	3.SELECT Command
+	4.Halt 
+	5.Authentication Command
+	MIFARE Read 
+	MIFARE Write 
+	MIFARE Decrement 
+	MIFARE Increment 
+	MIFARE Restore 
+	MIFARE Transfer 
+2 timeout
+	(fc = 13560 kHZ)
+	time = (n * 128 + 84) / fc
+	1.REQA/WUPA					n = 9;	
+	2.ANTICOLLISION Command		n = 9;
+	3.SELECT Command			n = 9;
+	4.Halt 						n = 9;
+	5.Authentication Command	
+	  part 1: 1ms
+	  part 2: 1ms
+	MIFARE Read :5 ms
+	MIFARE Write
+	  part 1: 5ms
+	  part 2: 10ms
+	MIFARE Increment, Decrement and Restore：
+	  part 1: 5ms
+	  part 2: 5ms
+	MIFARE Transfer 
+	  part 1: 10ms
+	REQA最小发送间隔为7000 / fc.

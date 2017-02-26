@@ -12,7 +12,7 @@
 /*使能/除能MFRC522中断*/
 #define RC522_INT_EN        0
 
-#define RC522_RETRY_MAX   (5)//重试次数
+#define RC522_RETRY_MAX   (110)//重试次数
 
 /*Timer Para*/
 /*
@@ -98,10 +98,19 @@ static bool Rc522SendCmd(uint8 const ucCmd);
 
 /************************************Rc522 sta/err check*********************/
 /*
-获取errcode 
-ucMark 可以是enErrorRegDef中枚举类型的或值
-    注意:执行命令可以清除除TempErr外的所有错误位
-*/
+功能:
+    1.检查Rc522 Error Register的相应Bits是否置位
+参数:   
+    1.ucMark: 要检查的Bits，如:CollErr etc.
+返回值: 
+    1.TRUE:  要检查的Bits已置位
+    2.FALSE: 要检查的Bits未置位
+输入:   void
+输出:   void
+备注:   无
+注意:   
+    1.执行命令可以清除除TempErr外的所有错误位
+ */
 static uint8 Rc522ChckErr(uint8 ucMark)
 {
     uint8 ucTmp = 0;
@@ -113,15 +122,15 @@ static uint8 Rc522ChckErr(uint8 ucMark)
 
 /*
 功能:
-    判断Rc522接收来自PICC的数据时是否有数据碰撞发生
+    1.判断Rc522接收来自PICC的数据时是否有数据碰撞发生
 参数:   void
 返回值: 
     TRUE:  有碰撞
     FALSE: 无碰撞
 输入:   void
 输出:   void
-备注:
-注意:
+备注:   void
+注意:   void
 */
 bool Rc522IsColl(void)
 {
@@ -130,12 +139,16 @@ bool Rc522IsColl(void)
 
 /*
 功能:
-    获取碰撞bit所在位置(1-32)
-参数:
-    void
-返回值:
-    碰撞bit所在位置(返回NO_COLL表示没有碰撞, RANGE_COLL表示碰撞超范围)
-*/
+    1.获取碰撞bit所在位置(1-32)
+参数:   
+    1.ucMark: 要检查的Bits，如:CollErr etc.
+返回值: 
+    碰撞bit所在位置(返回NO_COLL表示没有碰撞, RANGE_COLL表示碰撞超范围)  
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+ */
 static uint8 Rc522GetCollBitPos(void)
 {
     uint8 ucPos = NO_COLL;
@@ -162,15 +175,16 @@ static uint8 Rc522GetCollBitPos(void)
 
 /*
 功能:
-    获取已成功接收的Bits数
+    1.获取已成功接收的Bits数
 参数:
     1.pucBitCnt指向用于存储有效Bits数的变量的指针
 返回值:
     TRUE:   有碰撞
     FALSE:  无碰撞
+备注:   void
 注意:
-    若碰撞bit超过32bit，则*pucBitCnt为32
-    若没有碰撞发生，*pucBitCnt = FIFO中的数据长度 * 8
+    1.若碰撞bit超过32bit，则*pucBitCnt为32
+    2.若没有碰撞发生，*pucBitCnt = FIFO中的数据长度 * 8
 */
 bool Rc522GetValidCnt(uint8 *pucBitCnt)
 {
@@ -201,7 +215,14 @@ bool Rc522GetValidCnt(uint8 *pucBitCnt)
 
 /************************************Rc522 Init*********************/
 #if RC522_INT_EN
-/*MFRC522 Interrupt Cfg*/
+/*
+功能:
+    1.MFRC522 Interrupt Init
+参数:   void
+返回值: void
+备注:   void
+注意:   void
+*/
 static void Rc522IntInit(void)
 {
     /* interrupt enable*/
@@ -210,7 +231,14 @@ static void Rc522IntInit(void)
     return;
 }
 
-/*中断处理*/
+/*
+功能:
+    1.MFRC522 Interrupt 处理
+参数:   void
+返回值: void
+备注:   void
+注意:   void
+*/
 static void Rc522IntDeal(void)
 {
     uint8 ucCom = 0;
@@ -246,8 +274,15 @@ static void Rc522IntDeal(void)
     return;
 }
 
-/*中断服务函数*/
-static void Rc522IRQ(void)
+/*
+功能:
+    1.MFRC522 用于中断服务函数
+参数:   void
+返回值: void
+备注:   void
+注意:   void
+*/
+static void Rc522Isr(void)
 {
     Rc522IntDeal();
 	Rc522IrqClr();
@@ -255,16 +290,27 @@ static void Rc522IRQ(void)
     return;
 }
 #else
+/*
+功能:
+    1.MFRC522 查询模式下，不进行Interrupt初始化操作
+参数:   void
+返回值: void
+备注:   void
+注意:   void
+*/
 #define Rc522IntInit()       do{}while(0)
 
 /*
 功能:
-    等待ComIrqReg或者DivIrqReg寄存器中的相应位置位并清零ComIrqReg和DivIrqReg寄存器
-参数:
-    void
-返回值:
-    0:success
-    others:error code
+    1.等待ComIrqReg、DivIrqReg或Status2寄存器中的相应Bits置位
+    2.清零ComIrqReg或DivIrqReg寄存器中的对应Bits
+    3.若等待超时活期间Error Register中有Bit(s)置位,则返回错误代码
+参数:   void
+返回值: 
+    0:      success
+    Others: error code
+备注:   void
+注意:   void
 */
 static uint8 Rc522WaitFlg(enRc522FlgDef enFlg)
 {
@@ -275,6 +321,7 @@ static uint8 Rc522WaitFlg(enRc522FlgDef enFlg)
     uint8 step = 0;
     uint8 ucFlg = 0;
 
+    /*根据enFlg确定要操作的寄存器地址*/
     if (enFlg < FlgCRC)
     {
         ucAddr = RegComReq;
@@ -287,6 +334,7 @@ static uint8 Rc522WaitFlg(enRc522FlgDef enFlg)
     {
         ucAddr = RegStatus1;
     }
+    /*将enFlg转换为对应的寄存器中的位标志*/
     switch(enFlg)
     {
         case FlgTx:
@@ -333,8 +381,8 @@ static uint8 Rc522WaitFlg(enRc522FlgDef enFlg)
         printf("RegComReq:%x\r\n", (ucTmp));
     #endif
         err = Rc522ReadReg(RegErr);
-        if ((ucTmp & ErrIRq) && err)
-        {//RegErr寄存器中的ProtocolErr会被意外置位(原因未知),故如果RegErr为0，则不认为有错
+        if (ucTmp & ErrIRq)
+        {
             step = 1;
             goto ErrReTurn;
         }
@@ -343,60 +391,69 @@ static uint8 Rc522WaitFlg(enRc522FlgDef enFlg)
         {
             goto SuccessReturn;
         }
-        if (FlgMFCrypto1 == enFlg)
-        {//FlgMFCrypto1增加延时
-            DelayMs(1);
-        }
-        else
-        {
-            DelayUs(100);
-        }
+        DelayUs(100);
     }
-    while(i--);
+    while(i--);    
     err = 0xfe;
     step = 2;
 ErrReTurn:
     PrintErr(Rc522WaitFlg, step, err);
     return err;
 SuccessReturn:
+#if S50DBG
+    if (i != 0xff)
+    {
+        printf("Rc522 TimeOut:%d\r\n", i);
+    }
+#endif
+    Rc522WriteReg(ucAddr, ucTmp & (~ucFlg));
     return 0;
 }
 #endif
 
 /*
 功能:
-    等待数据接收完成,并停止Transceive命令
-参数:
-    void
-返回值:
+    1.等待数据接收完成,并停止Transceive命令
+    2.FIFO中的数据长度是否为0
+参数:   void
+返回值: 
     TRUE:  Success
     FALSE: Fail
-输入: void
-输出: void
+备注:   void
+注意:   
+    1.本函数仅用于Transceive命令发送完成后
 */
 bool Rc522WaitRxEnd(void)
 {
     bool res = FALSE;
 
-    res = Rc522WaitFlg(FlgRx) ? FALSE : TRUE;
-    DelayMs(1);//FlgRx置位后需要等一会儿才能正常读FIFO
+#if 0//S50DBG
+    if ((0 == Rc522WaitFlg(FlgRx)) && Rc522GetFifoLevel())
+#else
+    if (0 == Rc522WaitFlg(FlgRx))
+#endif
+    {
+        res = TRUE;
+    }   
+    DelayMs(1);//FlgRx置位后需要等一会儿才能正常获取FIFO中的数据长度
     return res;
 }
 
 /*
 功能:
-    1.
-    2.用RC522计算CRC
+    1.用RC522计算CRC_A
 参数:
-    1.pucCrc 指向用于存储CRC计算结果的缓存的指针
+    1.pucData 指向要计算CRC的数据包头
+    2.ucLen   pucData的数据长度
 返回值: 
     TRUE:  Success
     FALSE: Fail
-输入:   void
-输出:   
-    1.pucCrc
-备注:
-注意:
+输入:   
+    1.pucData
+输出:   void
+备注:   void
+注意:   
+    1.若要发送的数据结尾包含RCR_A
 */
 bool Rc522CalcCrc(uint8 *pucData, uint8 ucLen)
 {
@@ -410,12 +467,22 @@ bool Rc522CalcCrc(uint8 *pucData, uint8 ucLen)
         printf("S50 Calc Crc Err!\r\n");
         goto ErrReturn;
     }
-	bRes = TRUE;
+    bRes = TRUE;
 ErrReturn:
     Rc522SendCmd(CmdIdle);
     return bRes;
 }
 
+/*
+功能:
+    1.初始化RC522 Timer
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522TimerInit(void)
 {
     Rc522WriteReg(RegTMode,      TPresHiMask   & (RC522_TIMER_PRES >> 8));
@@ -424,6 +491,17 @@ static void Rc522TimerInit(void)
     //Rc522WriteReg(RegTReloadL,   TReloadLiMask & (RC522_TIMER_RELOAD));
     return;
 }
+
+/*
+功能:
+    1.RC522 通用寄存器Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522ComInit(void)
 {
     Rc522IrqClr();
@@ -433,6 +511,16 @@ static void Rc522ComInit(void)
     return;
 }
 
+/*
+功能:
+    1.RC522 发送相关寄存器Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522RxInit(void)
 {
     //Rc522WriteReg(RegRxMode, RxSpeed106k | RxNoErr);
@@ -442,6 +530,16 @@ static void Rc522RxInit(void)
     return ;
 }
 
+/*
+功能:
+    1.RC522 接收相关寄存器Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522TxInit(void)
 {
     //Rc522WriteReg(RegTxMode, TxSpeed106k);/*106 kBd   Tx CRC Disable */
@@ -453,11 +551,13 @@ static void Rc522TxInit(void)
 
 /*
 功能:
-    RC522硬件复位
-参数:
-    void
-返回值:
-    void
+    1.RC522 Hard Rest
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
 */
 static void Rc522Rst(void)
 {
@@ -468,6 +568,16 @@ static void Rc522Rst(void)
     return;
 }
 
+/*
+功能:
+    1.RC522 Power On
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522PowerOn(void)
 {
     Rc522Rst();
@@ -478,12 +588,32 @@ static void Rc522PowerOn(void)
     return;
 }
 
+/*
+功能:
+    1.RC522 RF相关寄存器Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522RfInit(void)
 {
     Rc522WriteReg(RegRFCfg,  RxGain);
     return ;
 }
 
+/*
+功能:
+    1.RC522 Register Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522RegInit(void)
 {
     Rc522PowerOn();
@@ -496,6 +626,16 @@ static void Rc522RegInit(void)
     return;
 }
 
+/*
+功能:
+    1.RC522 SPI Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522SpiInit(void)
 {
         stSpiInitDef stSpiInitInfo;
@@ -519,6 +659,16 @@ static void Rc522SpiInit(void)
         return;
 }
 
+/*
+功能:
+    1.RC522 GPIO Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522GpioInit(void)
 {
     GpioInitDef GPIO_InitStruct;
@@ -538,7 +688,7 @@ static void Rc522GpioInit(void)
         EXTI_InitStruct.EXTI_Mode    = EXTI_Mode_Interrupt;
         EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;
         EXTI_Init(&EXTI_InitStruct);
-        IrqRegester(RC522_INT_IRQn, Rc522IRQ);
+        IrqRegester(RC522_INT_IRQn, Rc522Isr);
     }
 #endif
     {
@@ -551,6 +701,16 @@ static void Rc522GpioInit(void)
     return;
 }
 
+/*
+功能:
+    1.RC522 Init
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 void Rc522Init(void)
 {
     Rc522SpiInit();
@@ -560,6 +720,18 @@ void Rc522Init(void)
 }
 
 /*********************Rc522 Reg Read/Write***********************************************/
+/*
+功能:
+    1.Write RC522 Register
+参数:   
+    1.addr:     要写的Register的地址
+    2.ucData:   要写入Register的数据
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522WriteReg(uint8 const addr, uint8 ucData)
 {
     uint8 aucTmp[2] = {0};
@@ -572,6 +744,18 @@ static void Rc522WriteReg(uint8 const addr, uint8 ucData)
     return;
 }
 
+/*
+功能:
+    1.Read RC522 Register
+参数:   
+    1.addr:     要读取的Register的地址
+返回值: 
+    读取的Register的数据
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static uint8 Rc522ReadReg(uint8 const addr)
 {
     uint8 ucTmp = 0;
@@ -591,7 +775,8 @@ static uint8 Rc522ReadReg(uint8 const addr)
 返回值:
     TRUE:  能自动结束
     FALSE: 不能自动结束
-输入:void
+输入:
+    1.astCmdAttr:   存储相应命令是否自动结束的结构体
 输出:void
 备注:
 */
@@ -633,6 +818,7 @@ static bool Rc522SendCmd(uint8 const ucCmd)
     bool res = FALSE;
 
     Rc522IrqClr();
+    Rc522WriteReg(RegCmd, CmdIdle);
     if(CmdMFA == ucCmd)
     {//清空RegStatus2寄存器
         Rc522WriteReg(RegStatus2, 0x00);
@@ -659,11 +845,13 @@ static bool Rc522SendCmd(uint8 const ucCmd)
 
 /*
 功能:
-    获取接收的数据中最后一个字节的有效位数
-参数:
-    void
+    1.获取接收的数据中最后一个字节的有效位数
+参数:   void
 返回值:
     接收的数据中最后一个字节的有效位数(1-8)
+输入:   void
+输出:   void
+备注:   void
 */
 static uint8 Rc522GetRxBitsCnt(void)
 {
@@ -679,15 +867,14 @@ static uint8 Rc522GetRxBitsCnt(void)
 /************************Rc522 Reg Cfg**************************************************/
 /*
 功能:
-    Rc522 RF module On/Off
-参数:
-    OnOff on/off命令
-返回值:
-    void
-输入:void
-输出:UID Size
+    1.Rc522 RF module On/Off
+参数:   
+    1.OnOff: on/off命令
+返回值: void
+输入:   void
+输出:   void
+备注:   void
 */
-
 void Rc522RfSw(enOnOffDef OnOff)
 {
     bool bIsOff = (enOff == OnOff);
@@ -708,19 +895,21 @@ void Rc522RfSw(enOnOffDef OnOff)
 
 /*
 功能:
-    Soft power-down mode entered/exit
-参数:
-    void
-返回值:
-    void
+    1.Soft power-down mode entered/exit
+参数:   
+    1.OnOff: on/off命令
+返回值: void
+输入:   void
+输出:   void
+备注:   void
 */
-static void Rc522PwrSw(enOnOffDef RecvOnOff)
+static void Rc522PwrSw(enOnOffDef PwrOnOff)
 {
-    uint8 ucCmd   = CmdNoCmd | ( (enOff == RecvOnOff) ? PwrDown : 0);
+    uint8 ucCmd   = CmdNoCmd | ( (enOff == PwrOnOff) ? PwrDown : 0);
     uint8 ucState = 0;
 
     Rc522SendCmd(ucCmd);
-    if (enOn == RecvOnOff)
+    if (enOn == PwrOnOff)
     {
         do
         {
@@ -734,11 +923,13 @@ static void Rc522PwrSw(enOnOffDef RecvOnOff)
 
 /*
 功能:
-    数据发送配置
-参数:
-    bIsCrc TRUE:数据包中包含CRC,FALSE:数据包中不包含CRC
-返回值:
-    void
+    1.数据发送配置
+参数:   
+    1.bIsCrc TRUE:数据包中包含CRC,FALSE:数据包中不包含CRC
+返回值: void
+输入:   void
+输出:   void
+备注:   void
 */
 void Rc522TxCfg(bool bIsCrc)
 {
@@ -758,12 +949,14 @@ void Rc522TxCfg(bool bIsCrc)
 
 /*
 功能:
-    数据接收配置
-参数:
-    bIsCrc  数据包中是否包含CRC
-    bIsPrty 数据包中是否包含校验位
-返回值:
-    void
+    1.数据接收配置
+参数:   
+    1.bIsCrc  接收数据包中是否包含CRC
+    2.bIsPrty 接收数据包中是否包含校验位
+返回值: void
+输入:   void
+输出:   void
+备注:   void
 */
 void Rc522RxCfg(bool bIsCrc, bool bIsPrty)
 {
@@ -795,33 +988,43 @@ void Rc522RxCfg(bool bIsCrc, bool bIsPrty)
 
 /*
 功能:
-    启动射频数据发送并等待发送完成
-    only valid in combination with the Transceive command
-参数:
-    TranLen     要发送的最后一个字节数据的bits长度(0-7,TX_WHOLE_BYTE表示整个字节全部发送)
+    1.启动射频数据发送并等待发送完成
+参数:   
+    1.TranLen     要发送的最后一个字节数据的bits长度(0-7,TX_WHOLE_BYTE表示整个字节全部发送)
 返回值: void
+输入:   void
+输出:   void
 备注:   void
 */
 void Rc522StartTransCv(uint8 RxPos, uint8 TranLen)
 {
     uint8 ucTmp = 0;
+#if S50DBG
+    static uint8 ucLst = 0;
+#endif
 
     Rc522SendCmd(CmdTransCv);
-    ucTmp |= (StartSend | (RxPos << 4) | (TranLen & TxLastBits));
-    
-    Rc522WriteReg(RegBitFraming, ucTmp);//FULL BYTE transmission/reception
+    ucTmp = (RxPos << 4) | (TranLen & TxLastBits);
+#if S50DBG
+    ucLst = Rc522ReadReg(RegBitFraming);
+    if(ucLst != ucTmp)
+    {
+        Rc522WriteReg(RegBitFraming, ucTmp);//FULL BYTE transmission/reception
+    }
+#endif
+    Rc522WriteReg(RegBitFraming, ucTmp | StartSend);//FULL BYTE transmission/reception
     return;
 }
 
 /*
 功能:
     1.结束RC522 Tranceive 指令
-参数:
-    void
-返回值:
-    void
-备注: 
-    void
+参数:   
+    1.TranLen     要发送的最后一个字节数据的bits长度(0-7,TX_WHOLE_BYTE表示整个字节全部发送)
+返回值: void
+输入:   void
+输出:   void
+备注:   void
 */
 void Rc522StopTransCv(void)
 {
@@ -832,7 +1035,15 @@ void Rc522StopTransCv(void)
 
 /*****************************************FIFO*******************************/
 
-/*获取FIFO中数据长度*/
+/*
+功能:
+    1.获取FIFO中数据长度
+参数:   void
+返回值: 
+    FIFO中数据长度
+备注:   void
+注意:   void
+*/
 uint8 Rc522GetFifoLevel(void)
 {
     uint8 ucTmp = 0;
@@ -921,7 +1132,14 @@ void Rc522WriteFIFO(uint8 *pData, uint8 uclen)
     return;
 }
 
-/*清空internal buffer */
+/*
+功能:
+    1.清空internal buffer
+参数:   void
+返回值: void
+备注:   void
+注意:   void
+*/
 static void Rc522ClrIntrBuffer(void)
 {
     uint8 aucTmp[25] = {0};
@@ -957,7 +1175,16 @@ bool Rc522GetRanData(uint8 *pucRead)
 }
 #if RC522_DBG
 
-/*串口打印FIFO中的数据*/
+/*
+功能:
+    1.串口打印FIFO中的数据
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522PrintFIFO(void)
 {
     uint8 *pucTmp = NULL;
@@ -978,11 +1205,13 @@ static void Rc522PrintFIFO(void)
 
 /*
 功能:
-    向FIFO中写入一个0(测试用)
-参数:
-    void
-返回值:
-    void
+    1.向FIFO中写入一个0(测试用)
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
 */
 static void Rc522WriteFIFOZero(void)
 {
@@ -992,6 +1221,16 @@ static void Rc522WriteFIFOZero(void)
     return;
 }
 
+/*
+功能:
+    1.测试RC522与MCU通信是否正常
+参数:   void
+返回值: void
+输入:   void
+输出:   void
+备注:   void
+注意:   void
+*/
 static void Rc522SelfTest(void)
 {
     Rc522Rst();//硬件复位
@@ -1010,17 +1249,40 @@ static void Rc522SelfTest(void)
 
 #endif
 /**************************Timer***************************/
+
 /*
-功能:   等待一段特定时间
-参数:   usTime:以ms为单位的时间
+功能:
+    1.配置RC522 Timer寄存器以等待一段特定时间
+    2.清TimerIRq Bit
+    3.如果bIsAuto为TRUE,则将Timer设置为自启动模式(发送完成后启动),否则，
+      设置则启动Timer
+参数:   
+    1.usTime:   以ms为单位的时间
+    2.bIsAuto:  是否在发送完成后自动启动Timer
+返回值: void
+输入:   void
+输出:   void
+备注:   
+    
+注意:   void
 */
-void Rc522WaitTime(uint16 usTime)
+void Rc522TimerCfg(uint16 usTime, bool bIsAuto)
 {
     uint16 usTReload = Rc522GetTReload(usTime);
-        
-    Rc522StartT();
+
     Rc522WriteReg(RegTReloadH,   (usTReload >> 8));
     Rc522WriteReg(RegTReloadL,   (usTReload));
+    if (bIsAuto)
+    {
+        uint8 ucTmp = 0;
+
+        ucTmp = Rc522ReadReg(RegTMode);
+        Rc522WriteReg(RegTMode,   (usTReload));
+    }
+    else
+    {
+        Rc522StartT();
+    }
     return;
 }
 

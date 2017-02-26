@@ -1,0 +1,12 @@
+--cpu Cortex-M3
+"..\obj\main.o"
+"..\obj\lib.o"
+"..\obj\core_cm3.o"
+"..\obj\startup_stm32f10x_hd.o"
+"..\obj\driver.o"
+"..\obj\middle.o"
+"..\obj\bsp.o"
+--library_type=microlib --strict --scatter "..\obj\sdio.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "..\obj\sdio.map" -o ..\obj\sdio.axf

@@ -29,14 +29,14 @@ typedef const struct{
 }stCmdAttrDef;
 
 stCmdAttrDef astCmdAttr[] = {//存储相应命令是否自动结束(仅用于判断是否需要等待IdleIRq)
-    {CmdIdle, TRUE},//Idle
+    {CmdIdle, FALSE},//Idle
     {CmdMem,  TRUE},//Mem
     {CmdGRID, TRUE},//Generate RandomID
     {CmdCRC,  FALSE},//CalcCRC
     {CmdTrans, TRUE},//Transmit
     {CmdNoCmd, FALSE},//NoCmdChange
     {CmdRecv,  TRUE},//Receive
-    {CmdTransCv, TRUE},//Transceive
+    {CmdTransCv, FALSE},//Transceive
     {CmdMFA, FALSE},//MFAuthent
     {CmdSoftRst, TRUE},//SoftReset
 };

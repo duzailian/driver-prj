@@ -7,7 +7,7 @@
 
 #define OLED_DBG            0
 
-/*可用的Y坐标定义*/
+/*可用的Y坐标范围*/
 typedef enum{
     OLED_Y0,
     OLED_Y8,

@@ -1,4 +1,17 @@
----- Rc522CalcCrc Matches (3 in 3 files) ----
-Rc522.c (bsp\rfid\rc522):bool Rc522CalcCrc(uint8 *pucData, uint8 ucLen)
-Rc522.h (bsp\rfid\rc522):extern bool Rc522CalcCrc(uint8 *pucData, uint8 ucLen);
-S50.c (bsp\rfid\s50):    Rc522CalcCrc();    
+---- Rc522SendCmd Matches (16 in 1 files) ----
+Rc522.c (bsp\rfid\rc522):static bool Rc522SendCmd(uint8 const ucCmd);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdCRC);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdIdle);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdSoftRst);//soft rest
+Rc522.c (bsp\rfid\rc522):static bool Rc522SendCmd(uint8 const ucCmd)
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdIdle);
+Rc522.c (bsp\rfid\rc522):        Rc522SendCmd(ucCmd);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(ucCmd);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdTransCv);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdIdle);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdMem);    
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdGRID);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdMem);
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdSoftRst);//soft rest
+Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdCRC);//Start the self test with the CalcCRC command.
+Rc522.c (bsp\rfid\rc522):    bRes = Rc522SendCmd(CmdMFA);

@@ -1,8 +1,8 @@
 1.//处理延时函数里rtc/systick溢出引发的bug
   确定CRCOk与CRCReady的差异
-  //解决ERR IRQ 置位,Err寄存器却为空的问题//RxIrq置位后需要加延时
-2.//验证数据收/发命令执行后，FIFO中的数据是否是接收与发送共存(程序中暂时按只保存接收数据处理)
-  并验证接收数据CRC是否在FIFO中
+  RxIrq置位后需要加延时//解决ERR IRQ 置位,Err寄存器却为空的问题
+2.否//验证数据收/发命令执行后，FIFO中的数据是否是接收与发送共存(程序中暂时按只保存接收数据处理)
+  否//并验证接收数据CRC是否在FIFO中
 3.测试ATQA是否为stand frame
 4.测试如果使能TxCRCEn是否可用代替将CRC数据写入FIFO
 5.//验证MFAuthent命令，如果成功收到PICC的数据，是否能自动结束(程序中暂时按不能自动停止结束处理)
@@ -18,9 +18,8 @@
 15.根据S50datasheet，添加基于RC522自带timer的超时检测机制
 16.验证CollPos与RxLastBits的区别
 17.//验证发生数据碰撞时FIFO中的数据长度是否大于碰撞所在位置
+18.根据ISOIEC14443-3_2001中的6.1.1 Frame delay time,确定合适的命令发送间隔
 
 
 1.验证
-
-
 
