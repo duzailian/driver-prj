@@ -9,7 +9,12 @@
   5.TX mode(PWR_UP = 1, PRIM_RX = 0,  a payload in the TX FIFO and a high pulse on the CE for 
 more than 10μs.)
   
+<<<<<<< HEAD
+3.特别注意:电平只切换一次(如0x00ffffff)的数据和与preamble(0x55 or 0xaa)相似高低交替切换的数据，不能作为address。容易触发Packet Error Rate
+4.
+=======
   
+>>>>>>> origin/master
   
   
   
