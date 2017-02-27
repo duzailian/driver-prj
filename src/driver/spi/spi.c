@@ -31,7 +31,7 @@ typedef const struct{
     SPI_TypeDef *  SPI;
     stSpiGpioDef   SpiGpio;//GPIO_Pin_5 etc.
     uint32_t       RccEn;//RCC_APB2Periph_SPI1 etc.
-    pAfCfgFunc     pRemapCfg;//Remapcfg
+    pAfCfgFunc     pRemapCfg;//Remap Gpio cfg
 }stSpiInfoDef;
 
 pSpiReadFunc apSpiReadFunc[SPI_CH_SZ] = {0};
@@ -60,7 +60,7 @@ stSpiInfoDef astSpiInfo[] = {
             {GPIOB, GpioPin15, RCC_APB2EN(GPIOB),}, //MOSI
             {GPIOB, GpioPin14, RCC_APB2EN(GPIOB),}, //MISO
             {GPIOB, GpioPin13, RCC_APB2EN(GPIOB),}, //SCK
-            {GPIOB, GpioPin12, RCC_APB2EN(GPIOB),}, //CS
+            {GPIOB, GpioPin7,  RCC_APB2EN(GPIOG),}, //CS
         }, 
         /*RccEn*/
         RCC_APB1EN(SPI2),
@@ -97,40 +97,34 @@ void SpiGpioInit(stSpiGpioDef   *SpiGpio)
     stGpioDef *GpioMOSI = &SpiGpio->GpioMOSI;
     stGpioDef *GpioMISO = &SpiGpio->GpioMISO;
     stGpioDef *GpioSCK  = &SpiGpio->GpioSCK;
+    stGpioDef *GpioCS  =  &SpiGpio->GpioCS;
     GpioInitDef GPIO_InitStruct;
 
     /*gpio rcc ENR*/ 
-    RCC->APB2ENR |= GpioMOSI->RccEn | GpioMISO->RccEn | GpioSCK->RccEn;
+    RCC->APB2ENR |= GpioMOSI->RccEn | GpioMISO->RccEn | GpioSCK->RccEn | GpioCS->RccEn;
 
+    /*SPI SCK Init*/
     GPIO_InitStruct.GPIO_Speed  = GpioSpeed50MHz;
     GPIO_InitStruct.GPIO_Mode   = GpioModeAfpp;
     GPIO_InitStruct.GpioPin     = GpioSCK->GpioPin;
     GpioInit(GpioSCK->GpioPort, &GPIO_InitStruct);
     
+    /*SPI MOSI Init*/
     GPIO_InitStruct.GpioPin     = GpioMOSI->GpioPin;
     GpioInit(GpioMOSI->GpioPort, &GPIO_InitStruct);
+    
+    /*SPI CS Init*/
+    GPIO_InitStruct.GPIO_Mode   = GpioModeOutPP;    
+    GPIO_InitStruct.GpioPin    = GpioCS->GpioPin;
+    GpioInit(GpioCS->GpioPort, &GPIO_InitStruct);
+    GpioSetBit(GpioCS->GpioPort, GpioCS->GpioPin);
 
-    GPIO_InitStruct.GpioPin     = GpioMISO->GpioPin;
-    GPIO_InitStruct.GPIO_Mode   = GpioModeInFloat;
+    /*SPI MISO Init*/
     GPIO_InitStruct.GPIO_Speed  = GpioInput;
+    GPIO_InitStruct.GPIO_Mode   = GpioModeInFloat;
+    GPIO_InitStruct.GpioPin     = GpioMISO->GpioPin;
     GpioInit(GpioMISO->GpioPort, &GPIO_InitStruct);
     
-    return;
-}
-
-void SpiGpioCsInit(stGpioDef *GpioCs)
-{
-    GpioInitDef GPIO_InitStruct;
-
-    /*gpio rcc ENR*/ 
-    RCC->APB2ENR |= GpioCs->RccEn;
-
-    GPIO_InitStruct.GPIO_Mode   = GpioModeOutPP;    
-    GPIO_InitStruct.GPIO_Speed  = GpioSpeed50MHz;
-    GPIO_InitStruct.GpioPin    = GpioCs->GpioPin;
-    GpioInit(GpioCs->GpioPort, &GPIO_InitStruct);
-
-    GpioSetBit(GpioCs->GpioPort, GpioCs->GpioPin);
     return;
 }
 
@@ -159,7 +153,6 @@ void SpiInit(stSpiInitDef *stCh)
     //GPIO init
     {
         stSpiGpioDef     *pstSpiGpio  = &stSpiInfo->SpiGpio;
-        stGpioDef        *pstGpioCs   = &pstSpiGpio->GpioCS;
         pAfCfgFunc       pRemapCfg = stSpiInfo->pRemapCfg;//
 
         if (pRemapCfg)
@@ -170,7 +163,6 @@ void SpiInit(stSpiInitDef *stCh)
         {
             SpiGpioInit(pstSpiGpio);//初始化除cs外的所有spi引脚
         }
-        SpiGpioCsInit(pstGpioCs);//cs脚初始化
     }
     //SPI init
     {

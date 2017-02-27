@@ -1,17 +1,3 @@
----- Rc522SendCmd Matches (16 in 1 files) ----
-Rc522.c (bsp\rfid\rc522):static bool Rc522SendCmd(uint8 const ucCmd);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdCRC);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdIdle);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdSoftRst);//soft rest
-Rc522.c (bsp\rfid\rc522):static bool Rc522SendCmd(uint8 const ucCmd)
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdIdle);
-Rc522.c (bsp\rfid\rc522):        Rc522SendCmd(ucCmd);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(ucCmd);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdTransCv);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdIdle);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdMem);    
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdGRID);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdMem);
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdSoftRst);//soft rest
-Rc522.c (bsp\rfid\rc522):    Rc522SendCmd(CmdCRC);//Start the self test with the CalcCRC command.
-Rc522.c (bsp\rfid\rc522):    bRes = Rc522SendCmd(CmdMFA);
+---- SpiGpioCsInit Matches (2 in 1 files) ----
+Spi.c (driver\spi):void SpiGpioCsInit(stGpioDef *GpioCs)
+Spi.c (driver\spi):        SpiGpioCsInit(pstGpioCs);//csΩ≈≥ı ºªØ

@@ -1,6 +1,0 @@
-有三种帧格式:
-	短帧，标准帧和定向防碰撞帧
-只有标准帧有crc
-
-Data transfer 固定为106 kbit/s
-100 % ASK Type A

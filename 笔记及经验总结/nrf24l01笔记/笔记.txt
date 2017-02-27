@@ -1,0 +1,15 @@
+1.推荐操作流程:
+  上电->Power on reset 100ms->Power Down
+  
+2.状态
+  1.Power Down Mode (PWR_UP = 0) 寄存器内容保留,SPI active
+  2.Standby-I mode(PWR_UP = 1, CE　= 0)part of the crystal oscillator is active. 
+  3.Standby-II mode(PWR_UP = 1, CE　= 1,TX FIFO为空)
+  4.RX mode(PWR_UP = 1, CE　= 1, PRIM_RX = 1,)
+  5.TX mode(PWR_UP = 1, PRIM_RX = 0,  a payload in the TX FIFO and a high pulse on the CE for 
+more than 10μs.)
+  
+  
+  
+  
+  

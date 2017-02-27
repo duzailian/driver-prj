@@ -29,6 +29,10 @@
 #include "beep/beep.c"
 #endif
 
+#if NRF_EN
+#include "24l01/nrf24l01.c"
+#endif
+
 void BspInit(void)
 {
 #if OLED_EN
@@ -54,6 +58,11 @@ void BspInit(void)
 #if BEEP_EN
     BeepInit();
 #endif
+
+#if BEEP_EN
+    NrfInit();
+#endif
+
     return;
 }
 

@@ -7,5 +7,6 @@
 #define W25Q64_EN       0
 #define E2PROM_EN       1
 #define BEEP_EN         1
+#define NRF_EN          1
 
 #endif

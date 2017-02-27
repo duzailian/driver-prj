@@ -182,7 +182,7 @@
           <Type>0</Type>
           <LineNumber>873</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134228524</Address>
+          <Address>134228920</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -191,30 +191,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\src\bsp\rfid/s50/s50.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\sdio\../src/bsp/rfid/s50/s50.c\873</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>120</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134229624</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\src\bsp\rfid/s50/s50.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
           <LineNumber>145</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134229414</Address>
+          <Address>134229810</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -224,6 +208,22 @@
           <Filename>..\src\bsp\rfid/s50/s50.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\sdio\../src/bsp/rfid/s50/s50.c\145</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>120</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134230020</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\src\bsp\rfid/s50/s50.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\sdio\../src/bsp/rfid/s50/s50.c\120</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>

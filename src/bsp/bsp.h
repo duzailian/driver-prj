@@ -31,6 +31,10 @@
 #include "beep/beep.h"
 #endif
 
+#if NRF_EN
+#include "24l01/nrf24l01.h"
+#endif
+
 extern void BspInit(void);
 
 #endif
